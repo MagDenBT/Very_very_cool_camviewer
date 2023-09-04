@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Very very cool camviewer</string>
+    <string name="app_bar_title">Мой дом</string>
+    <string name="online_text">Онлайн</string>
+    <string name="cameras_screen_title">Камеры</string>
+    <string name="doorphones_screen_title">Двери</string>
+    <string name="no_has_room">Без привязки</string>
+</resources>
