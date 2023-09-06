@@ -27,14 +27,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -47,16 +44,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.R
+import ch.magden.veryverycoolcamviewer.model.entities.Camera
 import ch.magden.veryverycoolcamviewer.presentations.ActionsRow
-import ch.magden.veryverycoolcamviewer.presentations.cameraItemSnapshot
-import ch.magden.veryverycoolcamviewer.presentations.cameraItems
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_SIDE_PADDING
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_WIDTH
 import ch.magden.veryverycoolcamviewer.ui.theme.ANIMATION_DURATION
 import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
 import ch.magden.veryverycoolcamviewer.ui.theme.CAMERA_CARD_OFFSET
-import ch.magden.veryverycoolcamviewer.ui.theme.DOORPHONE_CARD_OFFSET
 import ch.magden.veryverycoolcamviewer.ui.theme.MIN_DRAG_AMOUNT
 import ch.magden.veryverycoolcamviewer.ui.theme.extraMedium
 import ch.magden.veryverycoolcamviewer.ui.theme.extraSmall
@@ -71,11 +67,10 @@ import kotlin.math.roundToInt
 
 @Composable
 fun CamerasScreen(
-    viewModel: CamerasViewModel? = null,
-    testCamerasItemsMap: SnapshotStateMap<MutableState<String>, SnapshotStateList<CameraItem>>? = null
+    viewModel: CamerasViewModel,
 ) {
 
-    val camerasItemsMap = testCamerasItemsMap!!
+    val camerasItemsMap by viewModel.roomsAndCameras.collectAsStateWithLifecycle()
     val noHasRoomStub = stringResource(R.string.no_has_room)
     LazyColumn(
         modifier = Modifier
@@ -92,8 +87,7 @@ fun CamerasScreen(
             val camerasItems = camerasItemsMap[titleKey]
             if (camerasItems?.isNotEmpty() == true) {
 
-                val titleText =
-                    if (titleKey.value.isNullOrBlank()) noHasRoomStub else titleKey.value
+                val titleText = if (titleKey.isNullOrBlank()) noHasRoomStub else titleKey
 
                 item {
                     RoomTitle(modifier = Modifier.padding(top = extraSmall), titleText = titleText)
@@ -103,9 +97,13 @@ fun CamerasScreen(
 
 
                 items(items = camerasItems, key = { cameraItem -> cameraItem.id }) { cameraItem ->
-                    CameraTile(   modifier = Modifier
-                        .width(333.dp)
-                        .wrapContentHeight(), cameraItem = cameraItem)
+                    CameraTile(
+                        modifier = Modifier
+                            .width(333.dp)
+                            .wrapContentHeight(),
+                        onFavorite = { viewModel.switchCameraIsFavorite(cameraItem.id) },
+                        camera = cameraItem
+                    )
                 }
             }
 
@@ -118,7 +116,12 @@ fun CamerasScreen(
 }
 
 @Composable
-private fun CameraTile(cameraItem: CameraItem, modifier: Modifier = Modifier, isTest: Boolean = false,) {
+private fun CameraTile(
+    camera: Camera,
+    onFavorite: () -> Unit,
+    modifier: Modifier = Modifier,
+    isTest: Boolean = false,
+) {
     Spacer(Modifier.height(small))
     Box(
         modifier = modifier, contentAlignment = Alignment.CenterEnd
@@ -129,26 +132,24 @@ private fun CameraTile(cameraItem: CameraItem, modifier: Modifier = Modifier, is
         }
 
 
-        val onFavorite = {
-            cameraItem.isFavorite.value = !cameraItem.isFavorite.value
-            isRevealed = !isRevealed
-        }
 
         ActionsRow(
             actionIconWidth = ACTION_ITEM_WIDTH,
             actionIconSidePadding = ACTION_ITEM_SIDE_PADDING,
-            onFavorite = onFavorite,
-            isFavorite = cameraItem.isFavorite.value
+            onFavorite = {
+                onFavorite()
+                isRevealed = !isRevealed
+            },
+            isFavorite = camera.isFavorite.value
         )
 
-    CameraDraggebleCard(
-        cameraItem = cameraItem,
-        isRevealed = isRevealed,
-        onExpand = { isRevealed = true },
-        onCollapse = { isRevealed = false },
-        isTest = isTest
-    )
-}
+        CameraDraggebleCard(camera = camera,
+            isRevealed = isRevealed,
+            onExpand = { isRevealed = true },
+            onCollapse = { isRevealed = false },
+            isTest = isTest
+        )
+    }
 }
 
 @Composable
@@ -165,7 +166,8 @@ private fun RoomTitle(modifier: Modifier = Modifier, titleText: String) {
 @SuppressLint("UnusedTransitionTargetStateParameter")
 @Composable
 private fun CameraDraggebleCard(
-    modifier: Modifier = Modifier, cameraItem: CameraItem,
+    modifier: Modifier = Modifier,
+    camera: Camera,
     isRevealed: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
@@ -206,7 +208,7 @@ private fun CameraDraggebleCard(
     )
     ) {
         Column {
-            if (!cameraItem.snapshotUrl.value.isNullOrBlank()) {
+            if (!camera.snapshotUrl.isNullOrBlank()) {
                 Box(
                     modifier = Modifier
                         .height(207.dp)
@@ -215,8 +217,8 @@ private fun CameraDraggebleCard(
                 ) {
                     val painter =
                         if (isTest) painterResource(R.drawable.prev_snapshot) else rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current)
-                                .data(cameraItem.snapshotUrl.value).crossfade(true).build()
+                            ImageRequest.Builder(LocalContext.current).data(camera.snapshotUrl)
+                                .crossfade(true).build()
                         )
                     Image(
                         modifier = Modifier.fillMaxSize(),
@@ -232,7 +234,7 @@ private fun CameraDraggebleCard(
                         contentDescription = null
                     )
 
-                    val isRecordingVisibility = if (cameraItem.isRecording.value) 1f else 0f
+                    val isRecordingVisibility = if (camera.isRecording.value) 1f else 0f
                     Image(
                         modifier = Modifier
                             .alpha(isRecordingVisibility)
@@ -243,7 +245,7 @@ private fun CameraDraggebleCard(
                         contentDescription = null
                     )
 
-                    val isFavoriteVisibility = if (cameraItem.isFavorite.value) 1f else 0f
+                    val isFavoriteVisibility = if (camera.isFavorite.value) 1f else 0f
                     Image(
                         modifier = Modifier
                             .alpha(isFavoriteVisibility)
@@ -259,7 +261,7 @@ private fun CameraDraggebleCard(
             }
 
             Text(
-                text = cameraItem.name.value,
+                text = camera.name.value,
                 modifier = Modifier.padding(start = extraMedium, top = 22.dp, bottom = 30.dp),
                 textAlign = TextAlign.Start
             )
@@ -267,31 +269,31 @@ private fun CameraDraggebleCard(
     }
 }
 
-@Preview(widthDp = 375, heightDp = 557, showBackground = true)
-@Composable
-private fun PrevScreen() {
-    AppTheme {
-        CamerasScreen(viewModel = null, cameraItems())
-    }
-}
+//@Preview(widthDp = 375, heightDp = 557, showBackground = true)
+//@Composable
+//private fun PrevScreen() {
+//    AppTheme {
+//        CamerasScreen(viewModel = null, cameraItems())
+//    }
+//}
 
-@Preview(
-    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,
-    name = "Ret", uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
-)
-@Composable
-private fun PrevCameraTile() {
-    AppTheme {
-        CameraTile(
-            modifier = Modifier
-                .width(333.dp)
-                .wrapContentHeight()
-                .padding(horizontal = large),
-            cameraItem = cameraItemSnapshot,
-            isTest = true
-        )
-    }
-}
+//@Preview(
+//    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,
+//    name = "Ret", uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
+//)
+//@Composable
+//private fun PrevCameraTile() {
+//    AppTheme {
+//        CameraTile(
+//            modifier = Modifier
+//                .width(333.dp)
+//                .wrapContentHeight()
+//                .padding(horizontal = large),
+//            cameraItem = cameraItemSnapshot,
+//            isTest = true
+//        )
+//    }
+//}
 
 @Preview(
     widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,
@@ -305,10 +307,4 @@ private fun PrevRoomTitle() {
 }
 
 
-data class CameraItem(
-    val id: Int,
-    val name: MutableState<String>,
-    val snapshotUrl: MutableState<String?>,
-    val isFavorite: MutableState<Boolean>,
-    val isRecording: MutableState<Boolean>
-)
+

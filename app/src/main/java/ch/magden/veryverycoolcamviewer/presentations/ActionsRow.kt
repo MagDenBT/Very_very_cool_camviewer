@@ -21,17 +21,19 @@ import ch.magden.veryverycoolcamviewer.R
 fun ActionsRow(
     actionIconWidth: Dp,
     actionIconSidePadding: Dp,
-    onEdit: (() -> Unit)? = null,
+    onEdit: ((String) -> Unit)? = null,
     onFavorite: () -> Unit,
     isFavorite: Boolean,
 ) {
     Row(modifier = Modifier.wrapContentWidth(),horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically) {
-        val modifier = Modifier.padding(start = actionIconSidePadding).width(actionIconWidth)
+        val modifier = Modifier
+            .padding(start = actionIconSidePadding)
+            .width(actionIconWidth)
         if(onEdit != null) {
             IconButton(
                 modifier = modifier,
-                onClick = onEdit,
+                onClick = { onEdit("Новое имя") },
                 content = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_edit),

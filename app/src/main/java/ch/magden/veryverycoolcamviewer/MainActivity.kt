@@ -14,16 +14,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import ch.magden.veryverycoolcamviewer.presentations.MainPager
 import ch.magden.veryverycoolcamviewer.presentations.cameras.CamerasViewModel
+import ch.magden.veryverycoolcamviewer.presentations.doorphones.DoorphonesViewModel
 import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
 import ch.magden.veryverycoolcamviewer.utils.viewModelCreator
 
 class MainActivity : ComponentActivity() {
 
-    private val camerasViewModel by viewModelCreator { CamerasViewModel() }
-    private val doorphonesViewModel by viewModelCreator { CamerasViewModel() }
+    private lateinit var camerasViewModel:CamerasViewModel
+    private lateinit var doorphonesViewModel: DoorphonesViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Repositories.init(applicationContext)
         super.onCreate(savedInstanceState)
+
+        camerasViewModel = viewModelCreator { CamerasViewModel() }.value
+        doorphonesViewModel= viewModelCreator { DoorphonesViewModel() }.value
 
         val viewModels = listOf(camerasViewModel, doorphonesViewModel)
 
