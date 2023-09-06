@@ -5,6 +5,7 @@ import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
 import kotlinx.coroutines.flow.Flow
 
 interface DataLocalSource {
+
     fun getCameras(): Flow<List<Camera>>
 
     suspend fun insertOrUpdateCameras(cameras: List<Camera>)
