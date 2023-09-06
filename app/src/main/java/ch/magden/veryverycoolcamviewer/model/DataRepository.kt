@@ -8,13 +8,12 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface DataRepository {
 
-    fun getRooms() : Flow<Resource<List<String>>>
 
-    fun getCameras() : Flow<Resource<List<Camera>>>
+    fun getCameras() : StateFlow<Resource<List<Camera>>>
 
     fun setCamera(camera: Camera)
 
-    fun getDoorphones(): Flow<Resource<List<Doorphone>>>
+    fun getDoorphones(): StateFlow<Resource<List<Doorphone>>>
 
     fun setDoorphones(doorphone: Doorphone)
 }

@@ -8,7 +8,7 @@ import ch.magden.veryverycoolcamviewer.utils.Resource
 import ch.magden.veryverycoolcamviewer.utils.networkBoundResource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -16,54 +16,62 @@ class DataRepositoryImpl(
     private val localSource: DataLocalSource, private val remoteSource: DataRemoteSource, private val ioDispatcher: CoroutineDispatcher
 ) : DataRepository {
 
+    private lateinit var cameras: MutableStateFlow<Resource<List<Camera>>>
+    private lateinit var doorphones: MutableStateFlow<Resource<List<Doorphone>>>
 
-    override fun getCameras(): Flow<Resource<List<Camera>>> = networkBoundResource(
+    init {
+        CoroutineScope(ioDispatcher).launch {
 
-        query = {
-            localSource.getCameras()
-        },
-        fetch = {
-            remoteSource.fetchCameras()
-        },
-        shouldFetch = {queryData-> queryData.isEmpty()},
-        saveFetchResult = { camera ->
-            localSource.deleteAllCameras()
-            camera.collectLatest { fetchedResult -> localSource.insertOrUpdateCameras(fetchedResult) }
+              networkBoundResource(
+                query = {
+                    localSource.getCameras()
+                },
+                fetch = {
+                    remoteSource.fetchCameras()
+                },
+                shouldFetch = { queryData -> queryData.isEmpty() },
+                saveFetchResult = { camera ->
+                    localSource.deleteAllCameras()
+                    camera.collectLatest { fetchedResult ->
+                        localSource.insertOrUpdateCameras(
+                            fetchedResult
+                        )
+                    }
 
+                }
+            ).collect{cameras.value = it}
+
+              networkBoundResource(
+                 query = {
+                     localSource.getDoorphones()
+                 },
+                 fetch = {
+                     remoteSource.fetchDoorphones()
+                 },
+                 shouldFetch = {queryData-> queryData.isEmpty()},
+                 saveFetchResult = { camera ->
+                     localSource.deleteAllDoorphones()
+                     camera.collectLatest { fetchedResult -> localSource.insertOrUpdateDoorphones(fetchedResult) }
+                 }
+             ).collect{doorphones.value = it}
         }
-
-    )
-
-    override fun getRooms(): Flow<Resource<List<String>>> {
-        TODO("Not yet implemented")
     }
+
+    override fun getCameras() = cameras
 
     override fun setCamera(camera: Camera) {
         CoroutineScope(ioDispatcher).launch {
             localSource.insertOrUpdateCameras(listOf(camera))
+            localSource.getCameras().collect{cameras.value = Resource.Success(it)}
         }
     }
 
-    override fun getDoorphones():  Flow<Resource<List<Doorphone>>> = networkBoundResource(
-
-        query = {
-            localSource.getDoorphones()
-        },
-        fetch = {
-            remoteSource.fetchDoorphones()
-        },
-        shouldFetch = {queryData-> queryData.isEmpty()},
-        saveFetchResult = { camera ->
-            localSource.deleteAllDoorphones()
-            camera.collectLatest { fetchedResult -> localSource.insertDoorphones(fetchedResult) }
-
-        }
-
-    )
+    override fun getDoorphones() = doorphones
 
     override fun setDoorphones(doorphone: Doorphone) {
         CoroutineScope(ioDispatcher).launch {
-            localSource.insertDoorphones(listOf(doorphone))
+            localSource.insertOrUpdateDoorphones(listOf(doorphone))
+            localSource.getDoorphones().collect{doorphones.value = Resource.Success(it)}
         }
     }
 }

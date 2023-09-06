@@ -13,7 +13,7 @@ interface DataLocalSource {
 
     fun getDoorphones(): Flow<List<Doorphone>>
 
-    suspend fun insertDoorphones(doorphones: List<Doorphone>)
+    suspend fun insertOrUpdateDoorphones(doorphones: List<Doorphone>)
 
     suspend fun deleteAllDoorphones()
 

@@ -2,34 +2,30 @@ package ch.magden.veryverycoolcamviewer.presentations.doorphones
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.magden.veryverycoolcamviewer.model.DataRepository
+import ch.magden.veryverycoolcamviewer.model.entities.Camera
 import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
+import ch.magden.veryverycoolcamviewer.utils.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class DoorphonesViewModel : ViewModel() {
+class DoorphonesViewModel(private val dataRepository: DataRepository)  : ViewModel() {
 
-    private val _doorphonesItems = MutableStateFlow(listOf<Doorphone>())
-    val doorphonesItems: StateFlow<List<Doorphone>> get() = _doorphonesItems
+    val doorphones: StateFlow<Resource<List<Doorphone>>> = dataRepository.getDoorphones()
 
-
-    fun setDoorphoneName(newName: String, doorphoneId: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                doorphonesItems.value.find { it.id == doorphoneId }?.name?.value = newName
-            }
-        }
+    fun switchDoorphoneIsFavorite(doorphone: Doorphone) {
+        dataRepository.setDoorphones(doorphone.copy(isFavorite = !doorphone.isFavorite))
     }
 
-    fun switchDoorphoneIsFavorite(doorphoneId: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-               val doorphone =  doorphonesItems.value.find {it.id == doorphoneId }
-                doorphone?.let { it.isFavorite.value = !it.isFavorite.value }
-            }
-        }
+    fun setDoorphoneName(newName: String, doorphone: Doorphone){
+        dataRepository.setDoorphones(doorphone.copy(name = newName))
     }
 
 }

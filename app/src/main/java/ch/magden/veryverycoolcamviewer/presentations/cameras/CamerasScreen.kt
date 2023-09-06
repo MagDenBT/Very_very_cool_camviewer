@@ -47,7 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.R
 import ch.magden.veryverycoolcamviewer.model.entities.Camera
-import ch.magden.veryverycoolcamviewer.presentations.ActionsRow
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ActionsRow
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.LoadingScreen
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_SIDE_PADDING
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_WIDTH
 import ch.magden.veryverycoolcamviewer.ui.theme.ANIMATION_DURATION
@@ -60,17 +61,29 @@ import ch.magden.veryverycoolcamviewer.ui.theme.large
 import ch.magden.veryverycoolcamviewer.ui.theme.micro
 import ch.magden.veryverycoolcamviewer.ui.theme.roomTitle
 import ch.magden.veryverycoolcamviewer.ui.theme.small
+import ch.magden.veryverycoolcamviewer.utils.Resource
 import ch.magden.veryverycoolcamviewer.utils.regardingDp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlin.math.roundToInt
 
 @Composable
-fun CamerasScreen(
-    viewModel: CamerasViewModel,
+fun PreloadCamerasScreen(viewModel: CamerasViewModel){
+    val camerasItemsMap by viewModel.roomsAndCameras.collectAsStateWithLifecycle()
+    when(camerasItemsMap){
+        is Resource.Success -> CamerasScreen(camerasItemsMap = camerasItemsMap.data!!, onFavorite = { camera -> viewModel.switchCameraIsFavorite(camera) })
+        is Resource.Loading -> LoadingScreen()
+        is Resource.Error -> LoadingScreen() // по-хорошему нужная отдельная логика отработки ошибок
+    }
+
+}
+
+@Composable
+private fun CamerasScreen(
+    camerasItemsMap: Map<String?, List<Camera>>,
+    onFavorite: (Camera)->Unit
 ) {
 
-    val camerasItemsMap by viewModel.roomsAndCameras.collectAsStateWithLifecycle()
     val noHasRoomStub = stringResource(R.string.no_has_room)
     LazyColumn(
         modifier = Modifier
@@ -95,13 +108,12 @@ fun CamerasScreen(
                 }
 
 
-
                 items(items = camerasItems, key = { cameraItem -> cameraItem.id }) { cameraItem ->
                     CameraTile(
                         modifier = Modifier
                             .width(333.dp)
                             .wrapContentHeight(),
-                        onFavorite = { viewModel.switchCameraIsFavorite(cameraItem.id) },
+                        onFavorite = { onFavorite(cameraItem) },
                         camera = cameraItem
                     )
                 }
@@ -140,7 +152,7 @@ private fun CameraTile(
                 onFavorite()
                 isRevealed = !isRevealed
             },
-            isFavorite = camera.isFavorite.value
+            isFavorite = camera.isFavorite
         )
 
         CameraDraggebleCard(camera = camera,
@@ -234,7 +246,7 @@ private fun CameraDraggebleCard(
                         contentDescription = null
                     )
 
-                    val isRecordingVisibility = if (camera.isRecording.value) 1f else 0f
+                    val isRecordingVisibility = if (camera.isRecording) 1f else 0f
                     Image(
                         modifier = Modifier
                             .alpha(isRecordingVisibility)
@@ -245,7 +257,7 @@ private fun CameraDraggebleCard(
                         contentDescription = null
                     )
 
-                    val isFavoriteVisibility = if (camera.isFavorite.value) 1f else 0f
+                    val isFavoriteVisibility = if (camera.isFavorite) 1f else 0f
                     Image(
                         modifier = Modifier
                             .alpha(isFavoriteVisibility)
@@ -261,7 +273,7 @@ private fun CameraDraggebleCard(
             }
 
             Text(
-                text = camera.name.value,
+                text = camera.name,
                 modifier = Modifier.padding(start = extraMedium, top = 22.dp, bottom = 30.dp),
                 textAlign = TextAlign.Start
             )

@@ -5,4 +5,5 @@
     <string name="cameras_screen_title">Камеры</string>
     <string name="doorphones_screen_title">Двери</string>
     <string name="no_has_room">Без привязки</string>
+    <string name="loading_text">Загрузка</string>
 </resources>

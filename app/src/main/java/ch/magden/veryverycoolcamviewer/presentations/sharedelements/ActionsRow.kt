@@ -1,4 +1,4 @@
-package ch.magden.veryverycoolcamviewer.presentations
+package ch.magden.veryverycoolcamviewer.presentations.sharedelements
 
 import androidx.compose.foundation.layout.Arrangement
 

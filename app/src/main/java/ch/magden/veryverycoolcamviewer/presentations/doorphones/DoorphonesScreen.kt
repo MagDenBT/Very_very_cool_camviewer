@@ -40,8 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ch.magden.veryverycoolcamviewer.R
-import ch.magden.veryverycoolcamviewer.presentations.ActionsRow
-
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ActionsRow
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_WIDTH
 import ch.magden.veryverycoolcamviewer.ui.theme.ANIMATION_DURATION
 import ch.magden.veryverycoolcamviewer.ui.theme.DOORPHONE_CARD_OFFSET
@@ -52,34 +51,53 @@ import ch.magden.veryverycoolcamviewer.ui.theme.small
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlin.math.roundToInt
-
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.LoadingScreen
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_SIDE_PADDING
+import ch.magden.veryverycoolcamviewer.utils.Resource
 import ch.magden.veryverycoolcamviewer.utils.regardingDp
 
 @Composable
-fun DoorphonesScreen(
-    viewModel: DoorphonesViewModel,
-) {
+fun PreloadDoorphonesScreen(viewModel: DoorphonesViewModel) {
 
-    val doorphoneItems by viewModel.doorphonesItems.collectAsStateWithLifecycle()
+    val doorphoneItems by viewModel.doorphones.collectAsStateWithLifecycle()
+
+    when (doorphoneItems) {
+        is Resource.Success -> DoorphonesScreen(doorphoneItems = doorphoneItems.data!!,
+            onFavorite = { doorphone -> viewModel.switchDoorphoneIsFavorite(doorphone) },
+            onNameEdit = { newName, doorphone -> viewModel.setDoorphoneName(newName, doorphone) })
+
+        is Resource.Loading -> LoadingScreen()
+        is Resource.Error -> LoadingScreen() // по-хорошему нужная отдельная логика отработки ошибок
+    }
+
+}
+
+
+@Composable
+private fun DoorphonesScreen(
+    doorphoneItems: List<Doorphone>,
+    onFavorite: (Doorphone) -> Unit,
+    onNameEdit: (String, Doorphone) -> Unit
+) {
 
     LazyColumn(
         modifier = Modifier.padding(
             top = 5.dp, start = large, end = large
         ), verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(items = doorphoneItems, key = { doorphoneItem -> doorphoneItem.id }) { doorphoneItem ->
+        items(items = doorphoneItems,
+            key = { doorphoneItem -> doorphoneItem.id }) { doorphoneItem ->
             DoorphoneTile(
                 modifier = Modifier
                     .width(333.dp)
                     .wrapContentHeight(),
                 doorphone = doorphoneItem,
-                onFavorite = { viewModel.switchDoorphoneIsFavorite(doorphoneItem.id) },
-                onNameEdit = {newName -> viewModel.setDoorphoneName(newName,doorphoneItem.id)},
+                onFavorite = { doorphone -> onFavorite(doorphone) },
+                onNameEdit = { newName , doorphone -> onNameEdit(newName, doorphone) },
             )
         }
 
@@ -91,10 +109,9 @@ fun DoorphonesScreen(
 @Composable
 private fun DoorphoneTile(
     doorphone: Doorphone,
-    onFavorite: () -> Unit,
-    onNameEdit: (String) -> Unit,
+    onFavorite: (Doorphone) -> Unit,
+    onNameEdit: (String,Doorphone) -> Unit,
     modifier: Modifier = Modifier,
-    isTest: Boolean = false,
 ) {
     Spacer(Modifier.height(small))
 
@@ -110,18 +127,20 @@ private fun DoorphoneTile(
         ActionsRow(
             actionIconWidth = ACTION_ITEM_WIDTH,
             actionIconSidePadding = ACTION_ITEM_SIDE_PADDING,
-            onEdit = { newName -> onNameEdit(newName)
-                isRevealed = !isRevealed   },
-            onFavorite = {onFavorite()
-                isRevealed = !isRevealed },
-            isFavorite = doorphone.isFavorite.value
+            onEdit = { newName ->
+                onNameEdit(newName, doorphone)
+                isRevealed = !isRevealed
+            },
+            onFavorite = {
+                onFavorite(doorphone)
+                isRevealed = !isRevealed
+            },
+            isFavorite = doorphone.isFavorite
         )
-        DoorphoneDraggebleCard(
-            doorphone = doorphone,
+        DoorphoneDraggebleCard(doorphone = doorphone,
             isRevealed = isRevealed,
             onExpand = { isRevealed = true },
             onCollapse = { isRevealed = false },
-            isTest = isTest
         )
     }
 }
@@ -134,7 +153,6 @@ private fun DoorphoneDraggebleCard(
     isRevealed: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
-    isTest: Boolean = false
 ) {
 
 
@@ -172,7 +190,7 @@ private fun DoorphoneDraggebleCard(
         defaultElevation = defaultElevation
     )
     ) {
-        val hasSnapshot = !doorphone.snapshotUrl.value.isNullOrBlank()
+        val hasSnapshot = !doorphone.snapshotUrl.isNullOrBlank()
 
         Column {
             if (hasSnapshot) {
@@ -184,10 +202,9 @@ private fun DoorphoneDraggebleCard(
                 ) {
 
 
-                    val painter =
-                        if (isTest) painterResource(R.drawable.prev_snapshot) else rememberAsyncImagePainter(
+                    val painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current)
-                                .data(doorphone.snapshotUrl.value).crossfade(true).build()
+                                .data(doorphone.snapshotUrl).crossfade(true).build()
                         )
                     Image(
                         modifier = Modifier.fillMaxSize(),
@@ -202,7 +219,7 @@ private fun DoorphoneDraggebleCard(
                         contentDescription = null
                     )
 
-                    val isFavoriteVisibility = if (doorphone.isFavorite.value) 1f else 0f
+                    val isFavoriteVisibility = if (doorphone.isFavorite) 1f else 0f
                     Image(
                         modifier = Modifier
                             .alpha(isFavoriteVisibility)
@@ -227,9 +244,9 @@ private fun DoorphoneDraggebleCard(
                 top = 14.dp, bottom = 24.dp
             ) else Modifier.padding(top = 22.dp, bottom = 30.dp)
             Column(modifier = columnPadding) {
-                Text(text = doorphone.name.value)
+                Text(text = doorphone.name)
 
-                if (doorphone.online.value) {
+                if (doorphone.online) {
                     Text(
                         text = stringResource(id = R.string.online_text)
                     )

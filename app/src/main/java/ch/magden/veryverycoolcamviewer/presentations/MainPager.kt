@@ -12,11 +12,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModel
 import ch.magden.veryverycoolcamviewer.R
-import ch.magden.veryverycoolcamviewer.presentations.cameras.CamerasScreen
 import ch.magden.veryverycoolcamviewer.presentations.cameras.CamerasViewModel
-import ch.magden.veryverycoolcamviewer.presentations.doorphones.DoorphoneItem
-import ch.magden.veryverycoolcamviewer.presentations.doorphones.DoorphonesScreen
+import ch.magden.veryverycoolcamviewer.presentations.cameras.PreloadCamerasScreen
 import ch.magden.veryverycoolcamviewer.presentations.doorphones.DoorphonesViewModel
+import ch.magden.veryverycoolcamviewer.presentations.doorphones.PreloadDoorphonesScreen
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
@@ -118,13 +117,13 @@ private fun <T : ViewModel> getComposeScreens(
             is CamerasViewModel -> {
                 composeScreens.add(ComposeScreen(
                     title = stringResource(R.string.cameras_screen_title),
-                    screen = { vm -> CamerasScreen(vm as CamerasViewModel) }
+                    screen = { vm -> PreloadCamerasScreen(vm as CamerasViewModel) }
                 ))
             }
             is DoorphonesViewModel ->{
                 composeScreens.add(ComposeScreen(
                     title = stringResource(R.string.doorphones_screen_title),
-                    screen = { vm -> DoorphonesScreen(vm as DoorphonesViewModel) }
+                    screen = { vm -> PreloadDoorphonesScreen(vm as DoorphonesViewModel) }
                 ))
             }
         }
