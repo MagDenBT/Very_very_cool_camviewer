@@ -1,12 +1,11 @@
 package ch.magden.veryverycoolcamviewer.presentations
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -55,20 +54,9 @@ private fun Tabs(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val cornerRadius = 10.dp
-//        val indicator = @Composable { tabPositions: List<TabPosition> ->
-//            CustomIndicator(tabPositions, pagerState, cornerRadius)
-//        }
 
     TabRow(
-        selectedTabIndex = pagerState.currentPage,
-        modifier = Modifier.clip(
-            RoundedCornerShape(
-                bottomEnd = cornerRadius,
-                bottomStart = cornerRadius,
-            ),
-        ),
-
+        selectedTabIndex = pagerState.currentPage
         ) {
         composeScreens.forEachIndexed { index: Int, composeScreen: ComposeScreen ->
             Tab(
@@ -84,6 +72,7 @@ private fun Tabs(
             ) {
                 Text(
                     text = composeScreen.title,
+                    color = Color.Blue,
                     modifier = modifier.wrapContentHeight(Alignment.CenterVertically),
                 )
             }
@@ -100,7 +89,7 @@ private fun TabContent(composeScreens: List<ComposeScreen>, pagerState: PagerSta
         state = pagerState,
         verticalAlignment = Alignment.Top,
     ) { page ->
-        composeScreens[page].screen
+        composeScreens[page].screen(composeScreens[page].viewModel)
     }
 }
 
@@ -117,13 +106,15 @@ private fun <T : ViewModel> getComposeScreens(
             is CamerasViewModel -> {
                 composeScreens.add(ComposeScreen(
                     title = stringResource(R.string.cameras_screen_title),
-                    screen = { vm -> PreloadCamerasScreen(vm as CamerasViewModel) }
+                    screen = { vm -> PreloadCamerasScreen(vm as CamerasViewModel) },
+                    viewModel = viewModel
                 ))
             }
             is DoorphonesViewModel ->{
                 composeScreens.add(ComposeScreen(
                     title = stringResource(R.string.doorphones_screen_title),
-                    screen = { vm -> PreloadDoorphonesScreen(vm as DoorphonesViewModel) }
+                    screen = { vm -> PreloadDoorphonesScreen(vm as DoorphonesViewModel) },
+                    viewModel = viewModel
                 ))
             }
         }
@@ -138,5 +129,5 @@ private fun <T : ViewModel> getComposeScreens(
 
 typealias ComposeFun = @Composable (viewModel: ViewModel) -> Unit
 
-data class ComposeScreen(val title: String, val screen: ComposeFun)
+data class ComposeScreen(val title: String, val screen: ComposeFun, val viewModel: ViewModel)
 
