@@ -27,8 +27,8 @@ class MainActivity : ComponentActivity() {
         Repositories.init(applicationContext)
         super.onCreate(savedInstanceState)
 
-        camerasViewModel = viewModelCreator { CamerasViewModel() }.value
-        doorphonesViewModel= viewModelCreator { DoorphonesViewModel() }.value
+        camerasViewModel = viewModelCreator { CamerasViewModel(Repositories.dataRepository) }.value
+        doorphonesViewModel= viewModelCreator { DoorphonesViewModel(Repositories.dataRepository) }.value
 
         val viewModels = listOf(camerasViewModel, doorphonesViewModel)
 

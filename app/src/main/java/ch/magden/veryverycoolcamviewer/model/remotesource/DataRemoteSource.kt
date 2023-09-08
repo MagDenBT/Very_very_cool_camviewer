@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface DataRemoteSource {
 
-    fun fetchCameras(): Flow<List<Camera>>
+    suspend fun fetchCameras(): Flow<List<Camera>>
 
     suspend fun saveCameras(cameras: List<Camera>)
 
-    fun fetchDoorphones(): Flow<List<Doorphone>>
+    suspend fun fetchDoorphones(): Flow<List<Doorphone>>
 
     suspend fun saveDoorphones(cameras: List<Doorphone>)
 

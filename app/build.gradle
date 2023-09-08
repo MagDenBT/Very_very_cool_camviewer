@@ -3,16 +3,17 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
     id 'realm-android'
+    id 'kotlinx-serialization'
 }
 
 android {
     namespace 'ch.magden.veryverycoolcamviewer'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.veryverycoolcamviewer"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode globalVersionCode
         versionName globalVersionName
 
@@ -80,6 +81,12 @@ dependencies {
 
     implementation "androidx.lifecycle:lifecycle-runtime-compose:2.7.0-alpha01"
     implementation 'io.coil-kt:coil-compose:2.4.0'
+
+
+    implementation 'io.ktor:ktor-client-android:2.3.1'
+    implementation 'io.ktor:ktor-client-serialization:1.5.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+    implementation 'io.ktor:ktor-client-content-negotiation:2.3.1'
 
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 
