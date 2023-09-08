@@ -6,31 +6,24 @@ import ch.magden.veryverycoolcamviewer.model.localsource.DataLocalSource
 import ch.magden.veryverycoolcamviewer.model.localsource.realm.entities.CameraDbEntity
 import ch.magden.veryverycoolcamviewer.model.localsource.realm.entities.DoorphoneDbEntity
 import io.realm.Realm
+import io.realm.kotlin.executeTransactionAwait
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 class RealmDb : DataLocalSource {
 
-    private val db = Realm.getDefaultInstance()
+    override fun getCameras(): Flow<List<Camera>> {
+        val db = Realm.getDefaultInstance()
+        val realmCameras = db.copyFromRealm(db.where(CameraDbEntity::class.java).findAll()).also { db.close() }
 
-    private val realmCameras = db.where(CameraDbEntity::class.java).findAll()
-
-
-    private val _cameras by lazy { flowOf( realmCameras.map { it.toCamera() }.toList() )}
-
-    private val realmDoorphones = db.where(DoorphoneDbEntity::class.java).findAll()
-
-    private val _doorphones by lazy { flowOf( realmDoorphones.map { it.toDoorphone() }.toList() )}
-
-
-
-    override fun getCameras(): Flow<List<Camera>> = _cameras
+       return  flowOf( realmCameras.map { it.toCamera() }.toList() )
+    }
 
     override suspend fun insertOrUpdateCameras(cameras: List<Camera>) {
+        val db = Realm.getDefaultInstance()
         db.executeTransactionAsync { realm ->
             cameras.forEach {camera ->
-               val entity = realm.createObject(CameraDbEntity::class.java).apply {
-                id = camera.id
+               val entity = realm.createObject(CameraDbEntity::class.java,camera.id).apply {
                 name = camera.name
                 room = camera.room
                 snapshotUrl = camera.snapshotUrl
@@ -40,19 +33,31 @@ class RealmDb : DataLocalSource {
                 realm.insertOrUpdate(entity)
             }
         }
+
+        db.close()
     }
 
     override suspend fun deleteAllCameras() {
-        db.delete(CameraDbEntity::class.java)
+     Realm.getDefaultInstance().run {
+            beginTransaction()
+            delete(CameraDbEntity::class.java)
+            commitTransaction()
+            close()
+        }
     }
 
-    override fun getDoorphones() = _doorphones
+    override fun getDoorphones() : Flow<List<Doorphone>> {
+        val db = Realm.getDefaultInstance()
+        val realmDoorphones =
+            db.copyFromRealm(db.where(DoorphoneDbEntity::class.java).findAll()).also { db.close() }
 
+        return flowOf(realmDoorphones.map { it.toDoorphone() }.toList())
+    }
     override suspend fun insertOrUpdateDoorphones(doorphones: List<Doorphone>) {
+        val db = Realm.getDefaultInstance()
         db.executeTransactionAsync { realm ->
             doorphones.forEach {doorphone ->
-                val entity = realm.createObject(DoorphoneDbEntity::class.java).apply {
-                    id = doorphone.id
+                val entity = realm.createObject(DoorphoneDbEntity::class.java , doorphone.id).apply {
                     name = doorphone.name
                     room = doorphone.room
                     snapshotUrl = doorphone.snapshotUrl
@@ -61,13 +66,16 @@ class RealmDb : DataLocalSource {
                 realm.insertOrUpdate(entity)
             }
         }
+        db.close()
     }
 
     override suspend fun deleteAllDoorphones() {
-        db.delete(DoorphoneDbEntity::class.java)
+        Realm.getDefaultInstance().run {
+            beginTransaction()
+            delete(DoorphoneDbEntity::class.java)
+            commitTransaction()
+            close()
+        }
     }
 
-    protected fun finalize() {
-        db.close()
-    }
 }

@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
     id 'realm-android'
-    id 'kotlinx-serialization'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -11,7 +11,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.veryverycoolcamviewer"
+        applicationId "ch.magden.veryverycoolcamviewer"
         minSdk 24
         targetSdk 34
         versionCode globalVersionCode
@@ -83,10 +83,15 @@ dependencies {
     implementation 'io.coil-kt:coil-compose:2.4.0'
 
 
-    implementation 'io.ktor:ktor-client-android:2.3.1'
-    implementation 'io.ktor:ktor-client-serialization:1.5.2'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
-    implementation 'io.ktor:ktor-client-content-negotiation:2.3.1'
+
+
+    implementation "io.ktor:ktor-client-core:$ktor_version"
+    implementation "io.ktor:ktor-client-cio:$ktor_version"
+    implementation "io.ktor:ktor-client-android:$ktor_version"
+    implementation "io.ktor:ktor-client-okhttp:$ktor_version"
+    implementation "io.ktor:ktor-client-serialization:$ktor_version"
+    implementation "io.ktor:ktor-client-serialization-jvm:$ktor_version"
+//    implementation 'io.ktor:ktor-client-content-negotiation:2.3.1'
 
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 

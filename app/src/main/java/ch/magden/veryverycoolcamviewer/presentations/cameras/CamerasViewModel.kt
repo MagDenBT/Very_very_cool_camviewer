@@ -23,7 +23,7 @@ class CamerasViewModel(private val dataRepository: DataRepository) : ViewModel()
             is Resource.Error -> Resource.Error(resource.error!!)
             is Resource.Success -> Resource.Success(mappingRoomsToCameras(resource))
         }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, Resource.Loading())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, Resource.Loading())
 
     private fun mappingRoomsToCameras(resource: Resource<List<Camera>>) :  Map<String?, List<Camera>> =
         resource.data!!.let { data -> data.map { camera -> camera.room to data.filter { it.room == camera.room } } }

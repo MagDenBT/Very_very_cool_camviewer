@@ -75,7 +75,6 @@ fun PreloadCamerasScreen(viewModel: CamerasViewModel){
         is Resource.Loading -> LoadingScreen()
         is Resource.Error -> LoadingScreen() // по-хорошему нужная отдельная логика отработки ошибок
     }
-
 }
 
 @Composable

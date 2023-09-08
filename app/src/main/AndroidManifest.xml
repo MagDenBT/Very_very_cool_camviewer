@@ -11,7 +11,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VeryVeryCoolCamviewer"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
         <activity
             android:name="ch.magden.veryverycoolcamviewer.MainActivity"
             android:exported="true"
