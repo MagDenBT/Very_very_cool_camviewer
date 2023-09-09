@@ -3,7 +3,6 @@ package ch.magden.veryverycoolcamviewer.presentations.sharedelements
 import androidx.compose.foundation.layout.Arrangement
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -21,7 +20,7 @@ import ch.magden.veryverycoolcamviewer.R
 fun ActionsRow(
     actionIconWidth: Dp,
     actionIconSidePadding: Dp,
-    onEdit: ((String) -> Unit)? = null,
+    setShowEditDialog: ((Boolean) -> Unit)? = null,
     onFavorite: () -> Unit,
     isFavorite: Boolean,
 ) {
@@ -30,10 +29,10 @@ fun ActionsRow(
         val modifier = Modifier
             .padding(start = actionIconSidePadding)
             .width(actionIconWidth)
-        if(onEdit != null) {
+        if(setShowEditDialog != null) {
             IconButton(
                 modifier = modifier,
-                onClick = { onEdit("Новое имя") },
+                onClick = { setShowEditDialog(true) },
                 content = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_edit),

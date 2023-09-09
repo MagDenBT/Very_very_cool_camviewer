@@ -12,14 +12,6 @@ open class DoorphoneDbEntity : RealmObject() {
     var snapshotUrl: String? = null
     var isFavorite: Boolean = false
 
-    fun fromDoorphone(doorphone: Doorphone){
-        id = doorphone.id
-        name = doorphone.name
-        room = doorphone.room
-        snapshotUrl = doorphone.snapshotUrl
-        isFavorite = doorphone.isFavorite
-    }
-
     fun toDoorphone() = Doorphone(
         id = id,
         name = name,
@@ -27,4 +19,11 @@ open class DoorphoneDbEntity : RealmObject() {
         snapshotUrl = snapshotUrl,
         isFavorite = isFavorite,
     )
+
+    fun fromDoorphone(doorphone: Doorphone){
+        name = doorphone.name
+        room = doorphone.room
+        snapshotUrl = doorphone.snapshotUrl
+        isFavorite = doorphone.isFavorite
+    }
 }

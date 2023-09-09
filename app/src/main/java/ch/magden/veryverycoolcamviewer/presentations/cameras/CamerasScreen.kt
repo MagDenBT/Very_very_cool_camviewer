@@ -108,12 +108,20 @@ private fun CamerasScreen(
 
 
                 items(items = camerasItems, key = { cameraItem -> cameraItem.id }) { cameraItem ->
+                    var showActions by rememberSaveable {
+                        mutableStateOf(false)
+                    }
+
+                    Spacer(Modifier.height(small))
+
                     CameraTile(
                         modifier = Modifier
                             .width(333.dp)
                             .wrapContentHeight(),
-                        onFavorite = { onFavorite(cameraItem) },
-                        camera = cameraItem
+                        camera = cameraItem,
+                        onFavorite = { onFavorite(it) },
+                        isShowingActions = showActions,
+                        setShowActions = {showActions = it}
                     )
                 }
             }
@@ -129,36 +137,29 @@ private fun CamerasScreen(
 @Composable
 private fun CameraTile(
     camera: Camera,
-    onFavorite: () -> Unit,
+    onFavorite: (Camera) -> Unit,
+    setShowActions: (Boolean) -> Unit,
+    isShowingActions: Boolean,
     modifier: Modifier = Modifier,
-    isTest: Boolean = false,
 ) {
-    Spacer(Modifier.height(small))
     Box(
         modifier = modifier, contentAlignment = Alignment.CenterEnd
     ) {
-
-        var isRevealed by rememberSaveable {
-            mutableStateOf(false)
-        }
-
 
 
         ActionsRow(
             actionIconWidth = ACTION_ITEM_WIDTH,
             actionIconSidePadding = ACTION_ITEM_SIDE_PADDING,
             onFavorite = {
-                onFavorite()
-                isRevealed = !isRevealed
+                onFavorite(camera)
+                setShowActions(false)
             },
             isFavorite = camera.isFavorite
         )
 
         CameraDraggebleCard(camera = camera,
-            isRevealed = isRevealed,
-            onExpand = { isRevealed = true },
-            onCollapse = { isRevealed = false },
-            isTest = isTest
+            isShowingActions = isShowingActions,
+            setShowActions = setShowActions,
         )
     }
 }
@@ -177,16 +178,13 @@ private fun RoomTitle(modifier: Modifier = Modifier, titleText: String) {
 @SuppressLint("UnusedTransitionTargetStateParameter")
 @Composable
 private fun CameraDraggebleCard(
-    modifier: Modifier = Modifier,
     camera: Camera,
-    isRevealed: Boolean,
-    onExpand: () -> Unit,
-    onCollapse: () -> Unit,
-    isTest: Boolean = false
+    isShowingActions: Boolean,
+    setShowActions: (Boolean) -> Unit,
 ) {
     val transitionState = remember {
-        MutableTransitionState(isRevealed).apply {
-            targetState = !isRevealed
+        MutableTransitionState(isShowingActions).apply {
+            targetState = !isShowingActions
         }
     }
     val transition = updateTransition(transitionState, "cardTransition")
@@ -194,23 +192,23 @@ private fun CameraDraggebleCard(
     val offsetTransition by transition.animateFloat(
         label = "cardOffsetTransition",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isRevealed) -CAMERA_CARD_OFFSET.regardingDp() else 0f },
+        targetValueByState = { if (isShowingActions) -CAMERA_CARD_OFFSET.regardingDp() else 0f },
     )
 
     val defaultElevation by transition.animateDp(label = "cardElevation",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isRevealed) 20.dp else 2.dp })
+        targetValueByState = { if (isShowingActions) 20.dp else 2.dp })
 
-    Card(modifier = modifier
+    Card(modifier = Modifier
         .offset { IntOffset(offsetTransition.roundToInt(), 0) }
         .pointerInput(Unit) {
-            detectTapGestures(onLongPress = { onExpand() }, onDoubleTap = { onExpand() })
+            detectTapGestures(onLongPress = { setShowActions(true) }, onDoubleTap = { setShowActions(false) })
         }
         .pointerInput(Unit) {
             detectHorizontalDragGestures { _, dragAmount ->
                 when {
-                    dragAmount >= MIN_DRAG_AMOUNT -> onCollapse()
-                    dragAmount < -MIN_DRAG_AMOUNT -> onExpand()
+                    dragAmount >= MIN_DRAG_AMOUNT -> setShowActions(false)
+                    dragAmount < -MIN_DRAG_AMOUNT -> setShowActions(true)
                 }
             }
 
@@ -226,8 +224,7 @@ private fun CameraDraggebleCard(
                         .fillMaxWidth()
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    val painter =
-                        if (isTest) painterResource(R.drawable.prev_snapshot) else rememberAsyncImagePainter(
+                    val painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current).data(camera.snapshotUrl)
                                 .crossfade(true).build()
                         )
@@ -280,13 +277,7 @@ private fun CameraDraggebleCard(
     }
 }
 
-//@Preview(widthDp = 375, heightDp = 557, showBackground = true)
-//@Composable
-//private fun PrevScreen() {
-//    AppTheme {
-//        CamerasScreen(viewModel = null, cameraItems())
-//    }
-//}
+
 
 //@Preview(
 //    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,

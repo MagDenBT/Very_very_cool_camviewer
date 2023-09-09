@@ -23,7 +23,6 @@ open class CameraDbEntity : RealmObject(){
     )
 
     fun fromCamera(camera: Camera){
-        id = camera.id
         name = camera.name
         room = camera.room
         snapshotUrl = camera.snapshotUrl

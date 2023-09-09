@@ -55,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.EditDialog
 import ch.magden.veryverycoolcamviewer.presentations.sharedelements.LoadingScreen
 import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_SIDE_PADDING
 import ch.magden.veryverycoolcamviewer.utils.Resource
@@ -91,13 +92,32 @@ private fun DoorphonesScreen(
     ) {
         items(items = doorphoneItems,
             key = { doorphoneItem -> doorphoneItem.id }) { doorphoneItem ->
+
+            var showEditDialog by remember { mutableStateOf(false) }
+
+            if(showEditDialog)
+                EditDialog(value = "", setShowDialog = {
+                    showEditDialog = it
+                }) {
+                    onNameEdit(it, doorphoneItem)
+                }
+
+            var showActions by rememberSaveable {
+                mutableStateOf(false)
+            }
+            Spacer(Modifier.height(small))
+
             DoorphoneTile(
                 modifier = Modifier
                     .width(333.dp)
                     .wrapContentHeight(),
                 doorphone = doorphoneItem,
-                onFavorite = { doorphone -> onFavorite(doorphone) },
-                onNameEdit = { newName , doorphone -> onNameEdit(newName, doorphone) },
+                onFavorite = { onFavorite(it) },
+                setShowEditDialog = {
+                    showEditDialog = it
+                },
+                isShowingActions = showActions,
+                setShowActions = {showActions = it}
             )
         }
 
@@ -109,38 +129,34 @@ private fun DoorphonesScreen(
 @Composable
 private fun DoorphoneTile(
     doorphone: Doorphone,
+    isShowingActions: Boolean,
     onFavorite: (Doorphone) -> Unit,
-    onNameEdit: (String,Doorphone) -> Unit,
+    setShowActions: (Boolean) -> Unit,
+    setShowEditDialog: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Spacer(Modifier.height(small))
+
 
     Box(
         modifier = modifier, contentAlignment = Alignment.CenterEnd
     ) {
 
-        var isRevealed by rememberSaveable {
-            mutableStateOf(false)
-        }
-
 
         ActionsRow(
             actionIconWidth = ACTION_ITEM_WIDTH,
             actionIconSidePadding = ACTION_ITEM_SIDE_PADDING,
-            onEdit = { newName ->
-                onNameEdit(newName, doorphone)
-                isRevealed = !isRevealed
+            setShowEditDialog = {
+                setShowEditDialog(it)
             },
             onFavorite = {
                 onFavorite(doorphone)
-                isRevealed = !isRevealed
+                setShowActions(false)
             },
             isFavorite = doorphone.isFavorite
         )
         DoorphoneDraggebleCard(doorphone = doorphone,
-            isRevealed = isRevealed,
-            onExpand = { isRevealed = true },
-            onCollapse = { isRevealed = false },
+            isShowingActions = isShowingActions,
+            setShowActions = setShowActions,
         )
     }
 }
@@ -148,17 +164,15 @@ private fun DoorphoneTile(
 @Suppress("UnusedTransitionTargetStateParameter")
 @Composable
 private fun DoorphoneDraggebleCard(
-    modifier: Modifier = Modifier,
     doorphone: Doorphone,
-    isRevealed: Boolean,
-    onExpand: () -> Unit,
-    onCollapse: () -> Unit,
+    isShowingActions: Boolean,
+    setShowActions: (Boolean) -> Unit,
 ) {
 
 
     val transitionState = remember {
-        MutableTransitionState(isRevealed).apply {
-            targetState = !isRevealed
+        MutableTransitionState(isShowingActions).apply {
+            targetState = !isShowingActions
         }
     }
     val transition = updateTransition(transitionState, "cardTransition")
@@ -166,23 +180,23 @@ private fun DoorphoneDraggebleCard(
     val offsetTransition by transition.animateFloat(
         label = "cardOffsetTransition",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isRevealed) -DOORPHONE_CARD_OFFSET.regardingDp() else 0f },
+        targetValueByState = { if (isShowingActions) -DOORPHONE_CARD_OFFSET.regardingDp() else 0f },
     )
 
     val defaultElevation by transition.animateDp(label = "cardElevation",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isRevealed) 20.dp else 2.dp })
+        targetValueByState = { if (isShowingActions) 20.dp else 2.dp })
 
-    Card(modifier = modifier
+    Card(modifier = Modifier
         .offset { IntOffset(offsetTransition.roundToInt(), 0) }
         .pointerInput(Unit) {
-            detectTapGestures(onLongPress = { onExpand() }, onDoubleTap = { onExpand() })
+            detectTapGestures(onLongPress = {  setShowActions(true) }, onDoubleTap = {  setShowActions(false) })
         }
         .pointerInput(Unit) {
             detectHorizontalDragGestures { _, dragAmount ->
                 when {
-                    dragAmount >= MIN_DRAG_AMOUNT -> onCollapse()
-                    dragAmount < -MIN_DRAG_AMOUNT -> onExpand()
+                    dragAmount >= MIN_DRAG_AMOUNT ->  setShowActions(false)
+                    dragAmount < -MIN_DRAG_AMOUNT ->  setShowActions(true)
                 }
             }
 
@@ -264,14 +278,6 @@ private fun DoorphoneDraggebleCard(
     }
 }
 
-
-//@Preview(widthDp = 375, heightDp = 557, showBackground = true)
-//@Composable
-//private fun PrevScreen() {
-//    AppTheme {
-//        DoorphonesScreen(viewModel = null, doorphonesItems())
-//    }
-//}
 
 //@Preview(
 //    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,

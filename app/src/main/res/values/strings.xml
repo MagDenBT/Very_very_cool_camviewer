@@ -6,4 +6,7 @@
     <string name="doorphones_screen_title">Двери</string>
     <string name="no_has_room">Без привязки</string>
     <string name="loading_text">Загрузка</string>
+    <string name="empty_field_error">Поле не может быть пустым</string>
+    <string name="action_save">Сохранить</string>
+    <string name="name_text">Название</string>
 </resources>
