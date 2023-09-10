@@ -6,10 +6,13 @@ import ch.magden.veryverycoolcamviewer.datasource.localdata.LocalData
 import ch.magden.veryverycoolcamviewer.datasource.localdata.realm.entities.CameraDbEntity
 import ch.magden.veryverycoolcamviewer.datasource.localdata.realm.entities.DoorphoneDbEntity
 import io.realm.Realm
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-class RealmDb : LocalData {
+@Singleton
+class RealmDb @Inject constructor() : LocalData {
 
     override fun getCameras(): Flow<List<Camera>> {
         val db = Realm.getDefaultInstance()

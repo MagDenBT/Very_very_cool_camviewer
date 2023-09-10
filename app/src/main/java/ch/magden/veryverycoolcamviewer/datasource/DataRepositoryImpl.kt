@@ -2,17 +2,20 @@ package ch.magden.veryverycoolcamviewer.datasource
 
 import ch.magden.veryverycoolcamviewer.core.domainmodels.Camera
 import ch.magden.veryverycoolcamviewer.core.domainmodels.Doorphone
-import ch.magden.veryverycoolcamviewer.datasource.localdata.LocalData
-import ch.magden.veryverycoolcamviewer.datasource.remotedata.RemoteData
 import ch.magden.veryverycoolcamviewer.core.utils.Resource
 import ch.magden.veryverycoolcamviewer.core.utils.networkBoundResource
+import ch.magden.veryverycoolcamviewer.datasource.localdata.LocalData
+import ch.magden.veryverycoolcamviewer.datasource.remotedata.RemoteData
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class DataRepositoryImpl(
+@Singleton
+class DataRepositoryImpl @Inject constructor(
     private val localData: LocalData,
     private val remoteData: RemoteData,
     private val ioDispatcher: CoroutineDispatcher

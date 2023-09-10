@@ -5,22 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import ch.magden.veryverycoolcamviewer.core.utils.viewModelCreator
 import ch.magden.veryverycoolcamviewer.ui.screens.MainPager
-import ch.magden.veryverycoolcamviewer.ui.screens.cameras.CamerasViewModel
-import ch.magden.veryverycoolcamviewer.ui.screens.doorphones.DoorphonesViewModel
 import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var camerasViewModel: CamerasViewModel
-    private lateinit var doorphonesViewModel: DoorphonesViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        Repositories.init(applicationContext)
+        val mainActivityComponent = (application as InitApp).appComponent.mainActivityComponent().create()
         super.onCreate(savedInstanceState)
 
-        camerasViewModel = viewModelCreator { CamerasViewModel(Repositories.dataRepository) }.value
-        doorphonesViewModel =
-            viewModelCreator { DoorphonesViewModel(Repositories.dataRepository) }.value
+        val camerasViewModel by viewModelCreator { mainActivityComponent.camerasViewModel() }
+        val doorphonesViewModel by viewModelCreator { mainActivityComponent.doorphonesViewModel() }
 
         val viewModels = listOf(camerasViewModel, doorphonesViewModel)
 
