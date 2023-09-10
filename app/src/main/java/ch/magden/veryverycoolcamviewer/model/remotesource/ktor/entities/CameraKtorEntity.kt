@@ -4,22 +4,20 @@ import ch.magden.veryverycoolcamviewer.model.entities.Camera
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class GetCamerasKtorEntity(
     @SerialName("success")
     val success: Boolean,
     @SerialName("data")
-    val data: RoomsAndCamerasKtorEntity,
+    val data: RoomsAndCamerasKtorEntity
 )
-
 
 @Serializable
 data class RoomsAndCamerasKtorEntity(
     @SerialName("room")
     val room: List<String>,
     @SerialName("cameras")
-    val cameras: List<CameraKtorEntity>,
+    val cameras: List<CameraKtorEntity>
 )
 
 @Serializable
@@ -35,7 +33,7 @@ data class CameraKtorEntity(
     @SerialName("favorites")
     val isFavorite: Boolean,
     @SerialName("rec")
-    val isRecording: Boolean,
+    val isRecording: Boolean
 ) {
     fun toCamera() = Camera(
         id = id,

@@ -14,16 +14,15 @@ import ch.magden.veryverycoolcamviewer.R
 
 @Composable
 fun LoadingScreen() {
-
-        Box(
-            Modifier
-                .fillMaxSize()
-        )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator()
-            Text(text = stringResource(id = R.string.loading_text))
-        }
+    Box(
+        Modifier
+            .fillMaxSize()
+    )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator()
+        Text(text = stringResource(id = R.string.loading_text))
+    }
 }

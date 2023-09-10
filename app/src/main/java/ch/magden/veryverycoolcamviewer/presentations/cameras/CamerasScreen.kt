@@ -47,31 +47,31 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.R
 import ch.magden.veryverycoolcamviewer.model.entities.Camera
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ACTION_ITEM_SIDE_PADDING
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ACTION_ITEM_WIDTH
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ANIMATION_DURATION
 import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ActionsRow
 import ch.magden.veryverycoolcamviewer.presentations.sharedelements.LoadingScreen
-import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_SIDE_PADDING
-import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_WIDTH
-import ch.magden.veryverycoolcamviewer.ui.theme.ANIMATION_DURATION
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.MIN_DRAG_AMOUNT
 import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
-import ch.magden.veryverycoolcamviewer.ui.theme.CAMERA_CARD_OFFSET
-import ch.magden.veryverycoolcamviewer.ui.theme.MIN_DRAG_AMOUNT
-import ch.magden.veryverycoolcamviewer.ui.theme.extraMedium
-import ch.magden.veryverycoolcamviewer.ui.theme.extraSmall
-import ch.magden.veryverycoolcamviewer.ui.theme.large
-import ch.magden.veryverycoolcamviewer.ui.theme.micro
-import ch.magden.veryverycoolcamviewer.ui.theme.roomTitle
-import ch.magden.veryverycoolcamviewer.ui.theme.small
+import ch.magden.veryverycoolcamviewer.ui.theme.roomTitleTextStyle
 import ch.magden.veryverycoolcamviewer.utils.Resource
 import ch.magden.veryverycoolcamviewer.utils.regardingDp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlin.math.roundToInt
 
+val CAMERA_CARD_OFFSET = ACTION_ITEM_WIDTH.value + ACTION_ITEM_SIDE_PADDING.value
+
 @Composable
-fun PreloadCamerasScreen(viewModel: CamerasViewModel){
+fun PreloadCamerasScreen(viewModel: CamerasViewModel) {
     val camerasItemsMap by viewModel.roomsAndCameras.collectAsStateWithLifecycle()
-    when(camerasItemsMap){
-        is Resource.Success -> CamerasScreen(camerasItemsMap = camerasItemsMap.data!!, onFavorite = { camera -> viewModel.switchCameraIsFavorite(camera) })
+    when (camerasItemsMap) {
+        is Resource.Success -> CamerasScreen(
+            camerasItemsMap = camerasItemsMap.data!!,
+            onFavorite = { camera -> viewModel.switchCameraIsFavorite(camera) }
+        )
+
         is Resource.Loading -> LoadingScreen()
         is Resource.Error -> LoadingScreen() // по-хорошему нужная отдельная логика отработки ошибок
     }
@@ -80,58 +80,51 @@ fun PreloadCamerasScreen(viewModel: CamerasViewModel){
 @Composable
 private fun CamerasScreen(
     camerasItemsMap: Map<String?, List<Camera>>,
-    onFavorite: (Camera)->Unit
+    onFavorite: (Camera) -> Unit
 ) {
-
     val noHasRoomStub = stringResource(R.string.no_has_room)
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(
-                top = extraSmall, start = large, end = large
+                top = 8.dp,
+                start = 21.dp,
+                end = 21.dp
             ),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         camerasItemsMap.keys.forEach { titleKey ->
 
             val camerasItems = camerasItemsMap[titleKey]
             if (camerasItems?.isNotEmpty() == true) {
-
                 val titleText = if (titleKey.isNullOrBlank()) noHasRoomStub else titleKey
 
                 item {
-                    RoomTitle(modifier = Modifier.padding(top = extraSmall), titleText = titleText)
+                    RoomTitle(modifier = Modifier.padding(top = 8.dp), titleText = titleText)
                     Spacer(Modifier.height(1.dp))
                 }
-
 
                 items(items = camerasItems, key = { cameraItem -> cameraItem.id }) { cameraItem ->
                     var showActions by rememberSaveable {
                         mutableStateOf(false)
                     }
 
-                    Spacer(Modifier.height(small))
+                    Spacer(Modifier.height(11.dp))
 
                     CameraTile(
-                        modifier = Modifier
+                        modifier = Modifier.padding(bottom = 3.dp)
                             .width(333.dp)
                             .wrapContentHeight(),
                         camera = cameraItem,
                         onFavorite = { onFavorite(it) },
                         isShowingActions = showActions,
-                        setShowActions = {showActions = it}
+                        setShowActions = { showActions = it }
                     )
                 }
             }
-
         }
-
-
     }
-
-
 }
 
 @Composable
@@ -140,13 +133,12 @@ private fun CameraTile(
     onFavorite: (Camera) -> Unit,
     setShowActions: (Boolean) -> Unit,
     isShowingActions: Boolean,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier, contentAlignment = Alignment.CenterEnd
+        modifier = modifier,
+        contentAlignment = Alignment.CenterEnd
     ) {
-
-
         ActionsRow(
             actionIconWidth = ACTION_ITEM_WIDTH,
             actionIconSidePadding = ACTION_ITEM_SIDE_PADDING,
@@ -157,9 +149,10 @@ private fun CameraTile(
             isFavorite = camera.isFavorite
         )
 
-        CameraDraggebleCard(camera = camera,
+        CameraDraggebleCard(
+            camera = camera,
             isShowingActions = isShowingActions,
-            setShowActions = setShowActions,
+            setShowActions = setShowActions
         )
     }
 }
@@ -169,18 +162,17 @@ private fun RoomTitle(modifier: Modifier = Modifier, titleText: String) {
     Text(
         modifier = modifier.fillMaxWidth(),
         text = titleText,
-        style = roomTitle,
+        style = roomTitleTextStyle,
         textAlign = TextAlign.Start
     )
 }
-
 
 @SuppressLint("UnusedTransitionTargetStateParameter")
 @Composable
 private fun CameraDraggebleCard(
     camera: Camera,
     isShowingActions: Boolean,
-    setShowActions: (Boolean) -> Unit,
+    setShowActions: (Boolean) -> Unit
 ) {
     val transitionState = remember {
         MutableTransitionState(isShowingActions).apply {
@@ -192,29 +184,34 @@ private fun CameraDraggebleCard(
     val offsetTransition by transition.animateFloat(
         label = "cardOffsetTransition",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isShowingActions) -CAMERA_CARD_OFFSET.regardingDp() else 0f },
+        targetValueByState = { if (isShowingActions) -CAMERA_CARD_OFFSET.regardingDp() else 0f }
     )
 
-    val defaultElevation by transition.animateDp(label = "cardElevation",
+    val defaultElevation by transition.animateDp(
+        label = "cardElevation",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isShowingActions) 20.dp else 2.dp })
-
-    Card(modifier = Modifier
-        .offset { IntOffset(offsetTransition.roundToInt(), 0) }
-        .pointerInput(Unit) {
-            detectTapGestures(onLongPress = { setShowActions(true) }, onDoubleTap = { setShowActions(false) })
-        }
-        .pointerInput(Unit) {
-            detectHorizontalDragGestures { _, dragAmount ->
-                when {
-                    dragAmount >= MIN_DRAG_AMOUNT -> setShowActions(false)
-                    dragAmount < -MIN_DRAG_AMOUNT -> setShowActions(true)
-                }
-            }
-
-        }, elevation = CardDefaults.cardElevation(
-        defaultElevation = defaultElevation
+        targetValueByState = { if (isShowingActions) 20.dp else 2.dp }
     )
+
+    Card(
+        modifier = Modifier
+            .offset { IntOffset(offsetTransition.roundToInt(), 0) }
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = {
+                    setShowActions(!isShowingActions)
+                }, onDoubleTap = { setShowActions(!isShowingActions) })
+            }
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures { _, dragAmount ->
+                    when {
+                        dragAmount >= MIN_DRAG_AMOUNT -> setShowActions(false)
+                        dragAmount < -MIN_DRAG_AMOUNT -> setShowActions(true)
+                    }
+                }
+            },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = defaultElevation
+        )
     ) {
         Column {
             if (!camera.snapshotUrl.isNullOrBlank()) {
@@ -225,9 +222,9 @@ private fun CameraDraggebleCard(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     val painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current).data(camera.snapshotUrl)
-                                .crossfade(true).build()
-                        )
+                        ImageRequest.Builder(LocalContext.current).data(camera.snapshotUrl)
+                            .crossfade(true).build()
+                    )
                     Image(
                         modifier = Modifier.fillMaxSize(),
                         painter = painter,
@@ -246,7 +243,7 @@ private fun CameraDraggebleCard(
                     Image(
                         modifier = Modifier
                             .alpha(isRecordingVisibility)
-                            .padding(extraSmall)
+                            .padding(8.dp)
                             .align(Alignment.TopStart),
                         painter = painterResource(id = R.drawable.ic_recording),
                         contentScale = ContentScale.None,
@@ -257,34 +254,30 @@ private fun CameraDraggebleCard(
                     Image(
                         modifier = Modifier
                             .alpha(isFavoriteVisibility)
-                            .padding(micro)
+                            .padding(3.dp)
                             .align(Alignment.TopEnd),
                         painter = painterResource(id = R.drawable.ic_is_favorite),
                         contentScale = ContentScale.None,
                         contentDescription = null
                     )
-
-
                 }
             }
 
             Text(
                 text = camera.name,
-                modifier = Modifier.padding(start = extraMedium, top = 22.dp, bottom = 30.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 22.dp, bottom = 30.dp),
                 textAlign = TextAlign.Start
             )
         }
     }
 }
 
-
-
-//@Preview(
+// @Preview(
 //    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,
 //    name = "Ret", uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
-//)
-//@Composable
-//private fun PrevCameraTile() {
+// )
+// @Composable
+// private fun PrevCameraTile() {
 //    AppTheme {
 //        CameraTile(
 //            modifier = Modifier
@@ -295,11 +288,15 @@ private fun CameraDraggebleCard(
 //            isTest = true
 //        )
 //    }
-//}
+// }
 
 @Preview(
-    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,
-    name = "Ret2", uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
+    widthDp = 375,
+    heightDp = 557,
+    showBackground = true,
+    backgroundColor = 0xFF00FF00,
+    name = "Ret2",
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
 )
 @Composable
 private fun PrevRoomTitle() {
@@ -307,6 +304,3 @@ private fun PrevRoomTitle() {
         RoomTitle(titleText = "Гостиная")
     }
 }
-
-
-

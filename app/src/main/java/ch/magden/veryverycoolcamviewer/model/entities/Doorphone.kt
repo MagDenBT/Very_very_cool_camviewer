@@ -1,8 +1,5 @@
 package ch.magden.veryverycoolcamviewer.model.entities
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-
 data class Doorphone(
     val id: Int,
     val name: String,

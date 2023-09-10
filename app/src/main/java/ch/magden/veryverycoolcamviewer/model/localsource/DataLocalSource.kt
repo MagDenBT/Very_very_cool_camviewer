@@ -17,5 +17,4 @@ interface DataLocalSource {
     suspend fun insertOrUpdateDoorphones(doorphones: List<Doorphone>)
 
     suspend fun deleteAllDoorphones()
-
 }

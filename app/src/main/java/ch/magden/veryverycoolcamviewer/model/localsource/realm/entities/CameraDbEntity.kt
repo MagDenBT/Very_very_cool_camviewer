@@ -4,7 +4,7 @@ import ch.magden.veryverycoolcamviewer.model.entities.Camera
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
-open class CameraDbEntity : RealmObject(){
+open class CameraDbEntity : RealmObject() {
     @PrimaryKey
     var id: Int = 0
     var name: String = ""
@@ -19,10 +19,10 @@ open class CameraDbEntity : RealmObject(){
         room = room,
         snapshotUrl = snapshotUrl,
         isFavorite = isFavorite,
-        isRecording = isRecording,
+        isRecording = isRecording
     )
 
-    fun fromCamera(camera: Camera){
+    fun refillFromCamera(camera: Camera) {
         name = camera.name
         room = camera.room
         snapshotUrl = camera.snapshotUrl
@@ -30,4 +30,3 @@ open class CameraDbEntity : RealmObject(){
         isRecording = camera.isRecording
     }
 }
-

@@ -1,6 +1,5 @@
 package ch.magden.veryverycoolcamviewer.model
 
-import androidx.compose.runtime.mutableStateOf
 import ch.magden.veryverycoolcamviewer.model.entities.Camera
 import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
 import ch.magden.veryverycoolcamviewer.model.localsource.DataLocalSource
@@ -16,7 +15,7 @@ import kotlinx.coroutines.launch
 class DataRepositoryImpl(
     private val localSource: DataLocalSource,
     private val remoteSource: DataRemoteSource,
-    private val ioDispatcher: CoroutineDispatcher,
+    private val ioDispatcher: CoroutineDispatcher
 ) : DataRepository {
 
     private var cameras: MutableStateFlow<Resource<List<Camera>>> = MutableStateFlow(
@@ -44,7 +43,6 @@ class DataRepositoryImpl(
                         fetchedResult
                     )
                 }
-
             }).collect { cameras.value = it }
 
             networkBoundResource(query = {

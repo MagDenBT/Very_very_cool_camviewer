@@ -1,7 +1,5 @@
 package ch.magden.veryverycoolcamviewer.model.entities
 
-import androidx.compose.runtime.MutableState
-
 data class Camera(
     val id: Int,
     val name: String,

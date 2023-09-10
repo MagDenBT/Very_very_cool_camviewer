@@ -17,10 +17,10 @@ open class DoorphoneDbEntity : RealmObject() {
         name = name,
         room = room,
         snapshotUrl = snapshotUrl,
-        isFavorite = isFavorite,
+        isFavorite = isFavorite
     )
 
-    fun fromDoorphone(doorphone: Doorphone){
+    fun refillFromDoorphone(doorphone: Doorphone) {
         name = doorphone.name
         room = doorphone.room
         snapshotUrl = doorphone.snapshotUrl

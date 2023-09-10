@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -40,13 +41,9 @@ import androidx.compose.ui.window.Dialog
 import ch.magden.veryverycoolcamviewer.R
 import ch.magden.veryverycoolcamviewer.ui.theme.gray_400
 
-class EditDialog
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditDialog(value: String, setShowDialog: (Boolean) -> Unit, setValue: (String) -> Unit) {
-
     val txtFieldError = remember { mutableStateOf("") }
     val txtField = remember { mutableStateOf(value) }
 
@@ -56,7 +53,6 @@ fun EditDialog(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Strin
                 contentAlignment = Alignment.Center
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -73,9 +69,7 @@ fun EditDialog(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Strin
                             imageVector = Icons.Filled.Cancel,
                             contentDescription = "",
                             tint = colorResource(android.R.color.darker_gray),
-                            modifier = Modifier
-                                .width(30.dp)
-                                .height(30.dp)
+                            modifier = Modifier.width(30.dp).height(30.dp)
                                 .clickable { setShowDialog(false) }
                         )
                     }
@@ -83,15 +77,13 @@ fun EditDialog(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Strin
                     Spacer(modifier = Modifier.height(20.dp))
 
                     TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(
-                                    width = 2.dp,
-                                    color = gray_400
-                                ),
-                                shape = RoundedCornerShape(50)
+                        modifier = Modifier.fillMaxWidth().border(
+                            BorderStroke(
+                                width = 2.dp,
+                                color = gray_400
                             ),
+                            shape = RoundedCornerShape(50)
+                        ),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
@@ -102,7 +94,8 @@ fun EditDialog(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Strin
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         onValueChange = {
                             txtField.value = it
-                        })
+                        }
+                    )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -117,9 +110,8 @@ fun EditDialog(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Strin
                                 setValue(txtField.value)
                                 setShowDialog(false)
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
+                            colors = ButtonDefaults.buttonColors(containerColor = gray_400),
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
                         ) {
                             Text(text = stringResource(R.string.action_save))
                         }

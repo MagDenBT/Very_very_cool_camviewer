@@ -24,11 +24,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,46 +40,44 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.R
+import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ACTION_ITEM_SIDE_PADDING
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ACTION_ITEM_WIDTH
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ANIMATION_DURATION
 import ch.magden.veryverycoolcamviewer.presentations.sharedelements.ActionsRow
-import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_WIDTH
-import ch.magden.veryverycoolcamviewer.ui.theme.ANIMATION_DURATION
-import ch.magden.veryverycoolcamviewer.ui.theme.DOORPHONE_CARD_OFFSET
-import ch.magden.veryverycoolcamviewer.ui.theme.MIN_DRAG_AMOUNT
-import ch.magden.veryverycoolcamviewer.ui.theme.large
-import ch.magden.veryverycoolcamviewer.ui.theme.micro
-import ch.magden.veryverycoolcamviewer.ui.theme.small
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.EditDialog
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.LoadingScreen
+import ch.magden.veryverycoolcamviewer.presentations.sharedelements.MIN_DRAG_AMOUNT
+import ch.magden.veryverycoolcamviewer.ui.theme.gray_dense
+import ch.magden.veryverycoolcamviewer.utils.Resource
+import ch.magden.veryverycoolcamviewer.utils.regardingDp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlin.math.roundToInt
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ch.magden.veryverycoolcamviewer.model.entities.Doorphone
-import ch.magden.veryverycoolcamviewer.presentations.sharedelements.EditDialog
-import ch.magden.veryverycoolcamviewer.presentations.sharedelements.LoadingScreen
-import ch.magden.veryverycoolcamviewer.ui.theme.ACTION_ITEM_SIDE_PADDING
-import ch.magden.veryverycoolcamviewer.utils.Resource
-import ch.magden.veryverycoolcamviewer.utils.regardingDp
+
+val DOORPHONE_CARD_OFFSET = (ACTION_ITEM_WIDTH.value + ACTION_ITEM_SIDE_PADDING.value) * 2
 
 @Composable
 fun PreloadDoorphonesScreen(viewModel: DoorphonesViewModel) {
-
     val doorphoneItems by viewModel.doorphones.collectAsStateWithLifecycle()
 
     when (doorphoneItems) {
-        is Resource.Success -> DoorphonesScreen(doorphoneItems = doorphoneItems.data!!,
+        is Resource.Success -> DoorphonesScreen(
+            doorphoneItems = doorphoneItems.data!!,
             onFavorite = { doorphone -> viewModel.switchDoorphoneIsFavorite(doorphone) },
-            onNameEdit = { newName, doorphone -> viewModel.setDoorphoneName(newName, doorphone) })
+            onNameEdit = { newName, doorphone -> viewModel.setDoorphoneName(newName, doorphone) }
+        )
 
         is Resource.Loading -> LoadingScreen()
         is Resource.Error -> LoadingScreen() // по-хорошему нужная отдельная логика отработки ошибок
     }
-
 }
-
 
 @Composable
 private fun DoorphonesScreen(
@@ -84,31 +85,38 @@ private fun DoorphonesScreen(
     onFavorite: (Doorphone) -> Unit,
     onNameEdit: (String, Doorphone) -> Unit
 ) {
-
     LazyColumn(
         modifier = Modifier.padding(
-            top = 5.dp, start = large, end = large
-        ), verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally
+            top = 5.dp,
+            start = 21.dp,
+            end = 21.dp
+        ),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(items = doorphoneItems,
-            key = { doorphoneItem -> doorphoneItem.id }) { doorphoneItem ->
+        items(
+            items = doorphoneItems,
+            key = { doorphoneItem -> doorphoneItem.id }
+        ) { doorphoneItem ->
 
-            var showEditDialog by remember { mutableStateOf(false) }
-
-            if(showEditDialog)
-                EditDialog(value = "", setShowDialog = {
-                    showEditDialog = it
-                }) {
-                    onNameEdit(it, doorphoneItem)
-                }
-
+            var showEditDialog by rememberSaveable { mutableStateOf(false) }
             var showActions by rememberSaveable {
                 mutableStateOf(false)
             }
-            Spacer(Modifier.height(small))
+
+            if (showEditDialog) {
+                EditDialog(value = doorphoneItem.name, setShowDialog = {
+                    showEditDialog = it
+                }) {
+                    onNameEdit(it, doorphoneItem)
+                    showActions = false
+                }
+            }
+
+            Spacer(Modifier.height(11.dp))
 
             DoorphoneTile(
-                modifier = Modifier
+                modifier = Modifier.padding(bottom = 3.dp)
                     .width(333.dp)
                     .wrapContentHeight(),
                 doorphone = doorphoneItem,
@@ -117,13 +125,10 @@ private fun DoorphonesScreen(
                     showEditDialog = it
                 },
                 isShowingActions = showActions,
-                setShowActions = {showActions = it}
+                setShowActions = { showActions = it }
             )
         }
-
     }
-
-
 }
 
 @Composable
@@ -133,15 +138,12 @@ private fun DoorphoneTile(
     onFavorite: (Doorphone) -> Unit,
     setShowActions: (Boolean) -> Unit,
     setShowEditDialog: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
-
-
     Box(
-        modifier = modifier, contentAlignment = Alignment.CenterEnd
+        modifier = modifier,
+        contentAlignment = Alignment.CenterEnd
     ) {
-
-
         ActionsRow(
             actionIconWidth = ACTION_ITEM_WIDTH,
             actionIconSidePadding = ACTION_ITEM_SIDE_PADDING,
@@ -154,9 +156,10 @@ private fun DoorphoneTile(
             },
             isFavorite = doorphone.isFavorite
         )
-        DoorphoneDraggebleCard(doorphone = doorphone,
+        DoorphoneDraggebleCard(
+            doorphone = doorphone,
             isShowingActions = isShowingActions,
-            setShowActions = setShowActions,
+            setShowActions = setShowActions
         )
     }
 }
@@ -166,10 +169,8 @@ private fun DoorphoneTile(
 private fun DoorphoneDraggebleCard(
     doorphone: Doorphone,
     isShowingActions: Boolean,
-    setShowActions: (Boolean) -> Unit,
+    setShowActions: (Boolean) -> Unit
 ) {
-
-
     val transitionState = remember {
         MutableTransitionState(isShowingActions).apply {
             targetState = !isShowingActions
@@ -180,29 +181,35 @@ private fun DoorphoneDraggebleCard(
     val offsetTransition by transition.animateFloat(
         label = "cardOffsetTransition",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isShowingActions) -DOORPHONE_CARD_OFFSET.regardingDp() else 0f },
+        targetValueByState = { if (isShowingActions) -DOORPHONE_CARD_OFFSET.regardingDp() else 0f }
     )
 
-    val defaultElevation by transition.animateDp(label = "cardElevation",
+    val defaultElevation by transition.animateDp(
+        label = "cardElevation",
         transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
-        targetValueByState = { if (isShowingActions) 20.dp else 2.dp })
-
-    Card(modifier = Modifier
-        .offset { IntOffset(offsetTransition.roundToInt(), 0) }
-        .pointerInput(Unit) {
-            detectTapGestures(onLongPress = {  setShowActions(true) }, onDoubleTap = {  setShowActions(false) })
-        }
-        .pointerInput(Unit) {
-            detectHorizontalDragGestures { _, dragAmount ->
-                when {
-                    dragAmount >= MIN_DRAG_AMOUNT ->  setShowActions(false)
-                    dragAmount < -MIN_DRAG_AMOUNT ->  setShowActions(true)
-                }
-            }
-
-        }, elevation = CardDefaults.cardElevation(
-        defaultElevation = defaultElevation
+        targetValueByState = { if (isShowingActions) 20.dp else 2.dp }
     )
+
+    Card(
+        modifier = Modifier
+            .offset { IntOffset(offsetTransition.roundToInt(), 0) }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { setShowActions(!isShowingActions) },
+                    onDoubleTap = { setShowActions(!isShowingActions) }
+                )
+            }
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures { _, dragAmount ->
+                    when {
+                        dragAmount >= MIN_DRAG_AMOUNT -> setShowActions(false)
+                        dragAmount < -MIN_DRAG_AMOUNT -> setShowActions(true)
+                    }
+                }
+            },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = defaultElevation
+        )
     ) {
         val hasSnapshot = !doorphone.snapshotUrl.isNullOrBlank()
 
@@ -214,12 +221,10 @@ private fun DoorphoneDraggebleCard(
                         .fillMaxWidth()
                         .align(Alignment.CenterHorizontally)
                 ) {
-
-
                     val painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current)
-                                .data(doorphone.snapshotUrl).crossfade(true).build()
-                        )
+                        ImageRequest.Builder(LocalContext.current)
+                            .data(doorphone.snapshotUrl).crossfade(true).build()
+                    )
                     Image(
                         modifier = Modifier.fillMaxSize(),
                         painter = painter,
@@ -237,7 +242,7 @@ private fun DoorphoneDraggebleCard(
                     Image(
                         modifier = Modifier
                             .alpha(isFavoriteVisibility)
-                            .padding(micro)
+                            .padding(3.dp)
                             .align(Alignment.TopEnd),
                         painter = painterResource(id = R.drawable.ic_is_favorite),
                         contentScale = ContentScale.None,
@@ -254,15 +259,26 @@ private fun DoorphoneDraggebleCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val columnPadding = if (hasSnapshot) Modifier.padding(
-                top = 14.dp, bottom = 24.dp
-            ) else Modifier.padding(top = 22.dp, bottom = 30.dp)
+            val columnPadding = if (hasSnapshot) {
+                Modifier.padding(
+                    top = 14.dp,
+                    bottom = 24.dp
+                )
+            } else {
+                Modifier.padding(top = 22.dp, bottom = 30.dp)
+            }
             Column(modifier = columnPadding) {
                 Text(text = doorphone.name)
 
                 if (doorphone.online) {
                     Text(
-                        text = stringResource(id = R.string.online_text)
+                        text = stringResource(id = R.string.online_text),
+                        style = LocalTextStyle.current.copy(
+                            fontWeight = FontWeight.W300,
+                            fontSize = 14.sp,
+                            lineHeight = 20.64.sp,
+                            color = gray_dense
+                        )
                     )
                 }
             }
@@ -271,20 +287,18 @@ private fun DoorphoneDraggebleCard(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 painter = painterResource(id = R.drawable.ic_lock),
                 contentDescription = null,
-                contentScale = ContentScale.None,
+                contentScale = ContentScale.None
             )
         }
-
     }
 }
 
-
-//@Preview(
+// @Preview(
 //    widthDp = 375, heightDp = 557, showBackground = true, backgroundColor = 0xFF00FF00,
 //    name = "Ret", uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
-//)
-//@Composable
-//private fun PrevDoorphoneTile() {
+// )
+// @Composable
+// private fun PrevDoorphoneTile() {
 //    AppTheme {
 //        DoorphoneTile(
 //
@@ -295,7 +309,4 @@ private fun DoorphoneDraggebleCard(
 //                .padding(horizontal = large),
 //        )
 //    }
-//}
-
-
-
+// }

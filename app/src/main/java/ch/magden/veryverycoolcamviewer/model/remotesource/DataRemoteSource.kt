@@ -13,5 +13,4 @@ interface DataRemoteSource {
     suspend fun fetchDoorphones(): Flow<List<Doorphone>>
 
     suspend fun saveDoorphones(cameras: List<Doorphone>)
-
 }

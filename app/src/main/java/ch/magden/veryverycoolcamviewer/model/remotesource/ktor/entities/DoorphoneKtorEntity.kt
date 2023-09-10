@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetDoorphonesKtorEntity(
     val success: Boolean,
-    val data: List<DoorphoneKtorEntity>,
+    val data: List<DoorphoneKtorEntity>
 )
 
 @Serializable
@@ -16,10 +16,14 @@ data class DoorphoneKtorEntity(
     val name: String,
     val room: String? = null,
     @SerialName("snapshot") val snapshotUrl: String? = null,
-    @SerialName("favorites") val isFavorite: Boolean,
+    @SerialName("favorites") val isFavorite: Boolean
 ) {
 
     fun toDoorphone() = Doorphone(
-        id = id, name = name, room = room, snapshotUrl = snapshotUrl, isFavorite = isFavorite
+        id = id,
+        name = name,
+        room = room,
+        snapshotUrl = snapshotUrl,
+        isFavorite = isFavorite
     )
 }

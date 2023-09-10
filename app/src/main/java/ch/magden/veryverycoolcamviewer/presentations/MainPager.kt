@@ -2,10 +2,10 @@ package ch.magden.veryverycoolcamviewer.presentations
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -15,9 +15,11 @@ import ch.magden.veryverycoolcamviewer.presentations.cameras.CamerasViewModel
 import ch.magden.veryverycoolcamviewer.presentations.cameras.PreloadCamerasScreen
 import ch.magden.veryverycoolcamviewer.presentations.doorphones.DoorphonesViewModel
 import ch.magden.veryverycoolcamviewer.presentations.doorphones.PreloadDoorphonesScreen
+import ch.magden.veryverycoolcamviewer.ui.theme.appHeaderTextStyle
+import ch.magden.veryverycoolcamviewer.ui.theme.blue
+import ch.magden.veryverycoolcamviewer.ui.theme.tabTextStyle
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
@@ -40,9 +42,10 @@ private fun TopBar(modifier: Modifier = Modifier) {
         modifier = modifier,
         title = {
             Text(
-                stringResource(R.string.app_bar_title),
+                text = stringResource(R.string.app_bar_title),
+                style = appHeaderTextStyle
             )
-        },
+        }
     )
 }
 
@@ -51,35 +54,41 @@ private fun TopBar(modifier: Modifier = Modifier) {
 private fun Tabs(
     composeScreens: List<ComposeScreen>,
     pagerState: PagerState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
 
     TabRow(
-        selectedTabIndex = pagerState.currentPage
-        ) {
+        selectedTabIndex = pagerState.currentPage,
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                color = blue,
+                height = 2.dp,
+                modifier = Modifier
+                    .tabIndicatorOffset(tabPositions[pagerState.currentPage])
+            )
+        }
+    ) {
         composeScreens.forEachIndexed { index: Int, composeScreen: ComposeScreen ->
             Tab(
                 modifier = Modifier.zIndex(2f),
                 selected = index == pagerState.currentPage,
-//                    selectedContentColor = white,
-//                    unselectedContentColor = black,
                 onClick = {
                     scope.launch {
                         pagerState.animateScrollToPage(index)
                     }
-                },
+                }
+
             ) {
                 Text(
                     text = composeScreen.title,
-                    color = Color.Blue,
-                    modifier = modifier.wrapContentHeight(Alignment.CenterVertically),
+                    style = tabTextStyle,
+                    modifier = modifier.height(44.dp)
                 )
             }
         }
     }
 }
-
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -87,47 +96,45 @@ private fun TabContent(composeScreens: List<ComposeScreen>, pagerState: PagerSta
     HorizontalPager(
         count = composeScreens.size,
         state = pagerState,
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.Top
     ) { page ->
         composeScreens[page].screen(composeScreens[page].viewModel)
     }
 }
 
-
 @Composable
 private fun <T : ViewModel> getComposeScreens(
     viewModels: List<T>
 ): List<ComposeScreen> {
-
     val composeScreens = mutableListOf<ComposeScreen>()
 
     viewModels.forEach { viewModel ->
         when (viewModel) {
             is CamerasViewModel -> {
-                composeScreens.add(ComposeScreen(
-                    title = stringResource(R.string.cameras_screen_title),
-                    screen = { vm -> PreloadCamerasScreen(vm as CamerasViewModel) },
-                    viewModel = viewModel
-                ))
+                composeScreens.add(
+                    ComposeScreen(
+                        title = stringResource(R.string.cameras_screen_title),
+                        screen = { vm -> PreloadCamerasScreen(vm as CamerasViewModel) },
+                        viewModel = viewModel
+                    )
+                )
             }
-            is DoorphonesViewModel ->{
-                composeScreens.add(ComposeScreen(
-                    title = stringResource(R.string.doorphones_screen_title),
-                    screen = { vm -> PreloadDoorphonesScreen(vm as DoorphonesViewModel) },
-                    viewModel = viewModel
-                ))
+
+            is DoorphonesViewModel -> {
+                composeScreens.add(
+                    ComposeScreen(
+                        title = stringResource(R.string.doorphones_screen_title),
+                        screen = { vm -> PreloadDoorphonesScreen(vm as DoorphonesViewModel) },
+                        viewModel = viewModel
+                    )
+                )
             }
         }
-
-
     }
 
     return composeScreens
-
 }
-
 
 typealias ComposeFun = @Composable (viewModel: ViewModel) -> Unit
 
 data class ComposeScreen(val title: String, val screen: ComposeFun, val viewModel: ViewModel)
-
