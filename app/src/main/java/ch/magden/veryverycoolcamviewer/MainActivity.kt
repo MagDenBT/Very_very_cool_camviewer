@@ -3,11 +3,11 @@ package ch.magden.veryverycoolcamviewer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import ch.magden.veryverycoolcamviewer.presentations.MainPager
-import ch.magden.veryverycoolcamviewer.presentations.cameras.CamerasViewModel
-import ch.magden.veryverycoolcamviewer.presentations.doorphones.DoorphonesViewModel
+import ch.magden.veryverycoolcamviewer.ui.screens.MainPager
+import ch.magden.veryverycoolcamviewer.ui.screens.CamerasViewModel
+import ch.magden.veryverycoolcamviewer.ui.screens.doorphones.DoorphonesViewModel
 import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
-import ch.magden.veryverycoolcamviewer.utils.viewModelCreator
+import ch.magden.veryverycoolcamviewer.core.utils.viewModelCreator
 
 class MainActivity : ComponentActivity() {
 
