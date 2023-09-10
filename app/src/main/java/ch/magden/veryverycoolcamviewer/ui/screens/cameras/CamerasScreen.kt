@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -196,11 +195,6 @@ private fun CameraDraggebleCard(
     Card(
         modifier = Modifier
             .offset { IntOffset(offsetTransition.roundToInt(), 0) }
-            .pointerInput(Unit) {
-                detectTapGestures(onLongPress = {
-                    setShowActions(!isShowingActions)
-                }, onDoubleTap = { setShowActions(!isShowingActions) })
-            }
             .pointerInput(Unit) {
                 detectHorizontalDragGestures { _, dragAmount ->
                     when {
