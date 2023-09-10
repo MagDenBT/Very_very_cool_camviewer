@@ -1,4 +1,4 @@
-package ch.magden.veryverycoolcamviewer.ui.screens
+package ch.magden.veryverycoolcamviewer.ui.screens.cameras
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
@@ -47,10 +47,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.magden.veryverycoolcamviewer.R
 import ch.magden.veryverycoolcamviewer.core.domainmodels.Camera
-import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
-import ch.magden.veryverycoolcamviewer.ui.theme.roomTitleTextStyle
 import ch.magden.veryverycoolcamviewer.core.utils.Resource
 import ch.magden.veryverycoolcamviewer.core.utils.regardingDp
+import ch.magden.veryverycoolcamviewer.ui.screens.sharedelements.ACTION_ITEM_SIDE_PADDING
+import ch.magden.veryverycoolcamviewer.ui.screens.sharedelements.ACTION_ITEM_WIDTH
+import ch.magden.veryverycoolcamviewer.ui.screens.sharedelements.ANIMATION_DURATION
+import ch.magden.veryverycoolcamviewer.ui.screens.sharedelements.ActionsRow
+import ch.magden.veryverycoolcamviewer.ui.screens.sharedelements.LoadingScreen
+import ch.magden.veryverycoolcamviewer.ui.screens.sharedelements.MIN_DRAG_AMOUNT
+import ch.magden.veryverycoolcamviewer.ui.theme.AppTheme
+import ch.magden.veryverycoolcamviewer.ui.theme.roomTitleTextStyle
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import kotlin.math.roundToInt

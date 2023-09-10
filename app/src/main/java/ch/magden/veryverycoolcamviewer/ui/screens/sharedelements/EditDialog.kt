@@ -1,4 +1,4 @@
-package ch.magden.veryverycoolcamviewer.ui.screens
+package ch.magden.veryverycoolcamviewer.ui.screens.sharedelements
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border

@@ -1,10 +1,10 @@
-package ch.magden.veryverycoolcamviewer.ui.screens
+package ch.magden.veryverycoolcamviewer.ui.screens.cameras
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.magden.veryverycoolcamviewer.datasource.DataRepository
 import ch.magden.veryverycoolcamviewer.core.domainmodels.Camera
 import ch.magden.veryverycoolcamviewer.core.utils.Resource
+import ch.magden.veryverycoolcamviewer.datasource.DataRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map

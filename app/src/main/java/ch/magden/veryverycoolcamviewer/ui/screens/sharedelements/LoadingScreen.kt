@@ -1,4 +1,4 @@
-package ch.magden.veryverycoolcamviewer.ui.screens
+package ch.magden.veryverycoolcamviewer.ui.screens.sharedelements
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
